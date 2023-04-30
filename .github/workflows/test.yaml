@@ -2,8 +2,8 @@
 
 on:
   workflow_run:
-    workflows:
-      - "Lint"
+    # workflows:
+    #   - "Lint"
     branches:
       - '*'
     types:

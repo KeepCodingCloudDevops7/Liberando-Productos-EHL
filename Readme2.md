@@ -192,7 +192,7 @@ Es posible ejecutar los tests de diferentes formas:
 # Prometheus
 
 - para ver las metricas utilizaremos un prometheus que utiliza un cluster de Kubernetes
-    
+
 ```console
     minikube start --kubernetes-version='v1.21.1' \
  --memory=4096 \
@@ -200,28 +200,28 @@ Es posible ejecutar los tests de diferentes formas:
  -p monitoring-test
 ```
 - Añadir repo de helm
-    
+
    ```console
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
    ```
 - Despliegue del chart de Prometheus
-  
+
  ```console
   helm -n monitoring upgrade --install prometheus prometheus-community/kube-prometheus-stack -f ./helm/kube-prometheus-stack/values.yaml --create-namespace --wait
- ``` 
+ ```
 
 -  Portforward al service de Prometheus
 ```console
-kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 
+kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090
 ```
 - Portforward al service de grafana
 
 ```console
-kubectl -n monitoring port-forward svc/prometheus-grafana 3000:3000 
+kubectl -n monitoring port-forward svc/prometheus-grafana 3000:3000
 ```
 
 - Habilitar Metrics server
-  
+
   ```console
   minikube addons enable metrics-server -p monitoring-tests
   ```

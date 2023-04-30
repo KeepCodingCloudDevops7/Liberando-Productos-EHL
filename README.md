@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [keepcoding-devops-liberando-productos-practica-final](#keepcoding-devops-liberando-productos-practica-final)
+  - [Objetivo](#objetivo)
+  - [Proyecto inicial](#proyecto-inicial)
+  - [Software necesario](#software-necesario)
+  - [Ejecución de servidor](#ejecuci%C3%B3n-de-servidor)
+    - [Ejecución directa con Python](#ejecuci%C3%B3n-directa-con-python)
+    - [Ejecución a través de un contenedor Docker](#ejecuci%C3%B3n-a-trav%C3%A9s-de-un-contenedor-docker)
+  - [Comprobación de endpoints de servidor y métricas](#comprobaci%C3%B3n-de-endpoints-de-servidor-y-m%C3%A9tricas)
+  - [Tests](#tests)
+  - [Practica a realizar](#practica-a-realizar)
+  - [Entregables](#entregables)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # keepcoding-devops-liberando-productos-practica-final
 
 ## Objetivo

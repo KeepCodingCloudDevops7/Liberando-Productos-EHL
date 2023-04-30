@@ -3,15 +3,18 @@ PYTHON 	= $(VENV)/bin/python3
 PIP		= $(VENV)/bin/pip
 
 # Variables used to configure
-IMAGE_REGISTRY_DOCKERHUB 	?= ealopezor
+IMAGE_REGISTRY_DOCKERHUB 	?= docker.io
 IMAGE_REGISTRY_GHCR			?= ghcr.io
 IMAGE_REPO					= ealopezor
 IMAGE_NAME					?= liberando
 VERSION						?= develop
 
 # Variables used to configure docker images registries to build and push
-IMAGE			= $(IMAGE_REGISTRY)/$(IMAGE_REPO)/$(IMAGE_NAME):$(VERSION)
-IMAGE_LATEST	= $(IMAGE_REGISTRY)/$(IMAGE_REPO)/$(IMAGE_NAME):latest
+IMAGE			= $(IMAGE_REGISTRY_DOCKERHUB)/$(IMAGE_REPO)/$(IMAGE_NAME):$(VERSION)
+IMAGE_LATEST	= $(IMAGE_REGISTRY_DOCKERHUB)/$(IMAGE_REPO)/$(IMAGE_NAME):latest
+IMAGE_GHCR			= $(IMAGE_REGISTRY_GHCR)/$(IMAGE_REPO)/$(IMAGE_NAME):$(VERSION)
+IMAGE_GHRC_LATEST	= $(IMAGE_REGISTRY_GHCR)/$(IMAGE_REPO)/$(IMAGE_NAME):latest
+
 
 .PHONY: run
 run: $(VENV)/bin/activate

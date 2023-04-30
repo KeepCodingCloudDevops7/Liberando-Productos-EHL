@@ -1,21 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [keepcoding-devops-liberando-productos-practica-final](#keepcoding-devops-liberando-productos-practica-final)
-  - [Objetivo](#objetivo)
-  - [Proyecto inicial](#proyecto-inicial)
-  - [Software necesario](#software-necesario)
-  - [Ejecución de servidor](#ejecuci%C3%B3n-de-servidor)
-    - [Ejecución directa con Python](#ejecuci%C3%B3n-directa-con-python)
-    - [Ejecución a través de un contenedor Docker](#ejecuci%C3%B3n-a-trav%C3%A9s-de-un-contenedor-docker)
-  - [Comprobación de endpoints de servidor y métricas](#comprobaci%C3%B3n-de-endpoints-de-servidor-y-m%C3%A9tricas)
-  - [Tests](#tests)
-  - [Practica a realizar](#practica-a-realizar)
-  - [Entregables](#entregables)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # keepcoding-devops-liberando-productos-practica-final
 
 ## Objetivo
@@ -71,22 +53,18 @@ Es necesario disponer del siguiente software:
         El comando anterior mostrará algo como lo mostrado a continuación:ç
 
         ```sh
-            Python 3.8.13
+            Python 3.10.7
         ```
 
    2. Crear de virtualenv en la raíz del directorio para poder instalar las librerías necesarias:
 
-       - En caso de en el comando anterior haber obtenido `Python 3.8.*`
+       - En caso de en el comando anterior haber obtenido `Python 3.10.7`
 
             ```sh
-            python3.8 -m venv venv
+            python3 -m venv venv
             ```
 
-       - En caso de en el comando anterior haber obtenido `Python 3.9.*`:
 
-           ```sh
-           python3.9 -m venv venv
-           ```
 
 2. Activar el virtualenv creado en el directorio `venv` en el paso anterior:
 
@@ -184,28 +162,6 @@ Una vez arrancado el servidor, utilizando cualquier de las formas expuestas en l
       ```json
       {"message": "Bye, Bye, Bye..."}
       ```
-- Comprobación de registro de métricas, si se accede a la URL `http://0.0.0.0:8000` se podrán ver todas las métricas con los valores actuales en ese momento:
-
-  - Realizar varias llamadas al endpoint `/` y ver como el contador utilizado para registrar las llamadas a ese endpoint, `main_requests_total` ha aumentado, se debería ver algo como lo mostrado a continuación:
-
-    ```sh
-    # TYPE main_requests_total counter
-    main_requests_total 4.0
-    ```
-
-  - Realizar varias llamadas al endpoint `/health` y ver como el contador utilizado para registrar las llamadas a ese endpoint, `healthcheck_requests_total` ha aumentado, se debería ver algo como lo mostrado a continuación:
-
-    ```sh
-    # TYPE healthcheck_requests_total counter
-    healthcheck_requests_total 26.0
-    ```
-
-  - También se ha credo un contador para el número total de llamadas al servidor `server_requests_total`, por lo que este valor debería ser la suma de los dos anteriores, tal y como se puede ver a continuación:
-
-    ```sh
-    # TYPE server_requests_total counter
-    server_requests_total 30.0
-    ```
 
 ## Tests
 
@@ -231,52 +187,125 @@ Es posible ejecutar los tests de diferentes formas:
     pytest --cov --cov-report=html
     ```
 
-## Practica a realizar
+## Monitoring
 
-A partir del ejemplo inicial descrito en los apartados anteriores es necesario realizar una serie de mejoras:
+# Prometheus
 
-Los requirimientos son los siguientes:
+- para ver las metricas utilizaremos un prometheus que utiliza un cluster de Kubernetes
 
-- Añadir por lo menos un nuevo endpoint a los existentes `/` y `/health`, un ejemplo sería `/bye` que devolvería `{"msg": "Bye Bye"}`, para ello será necesario añadirlo en el fichero [src/application/app.py](./src/application/app.py)
+```console
+    minikube start --kubernetes-version='v1.21.1' \
+ --memory=4096 \
+ --addons="metrics-server,default-storageclass,storage-provisioner" \
+ -p monitoring-test
+```
+- Añadir repo de helm
 
-- Creación de tests unitarios para el nuevo endpoint añadido, para ello será necesario modificar el [fichero de tests](./src/tests/app_test.py)
+   ```console
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+   ```
+- Despliegue del chart de Prometheus
 
-- Opcionalmente creación de helm chart para desplegar la aplicación en Kubernetes, se dispone de un ejemplo de ello en el laboratorio realizado en la clase 3
+ ```console
+  helm -n monitoring upgrade --install prometheus prometheus-community/kube-prometheus-stack -f ./helm/kube-prometheus-stack/values.yaml --create-namespace --wait
+ ```
 
-- Creación de pipelines de CI/CD en cualquier plataforma (Github Actions, Jenkins, etc) que cuenten por lo menos con las siguientes fases:
+-  Portforward al service de Prometheus
+```console
+kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+- Portforward al service de grafana
 
-  - Testing: tests unitarios con cobertura. Se dispone de un [ejemplo con Github Actions en el repositorio actual](./.github/workflows/test.yaml)
+```console
+kubectl -n monitoring port-forward svc/prometheus-grafana 3000:3000
+```
 
-  - Build & Push: creación de imagen docker y push de la misma a cualquier registry válido que utilice alguna estrategia de release para los tags de las vistas en clase, se recomienda GHCR ya incluido en los repositorios de Github. Se dispone de un [ejemplo con Github Actions en el repositorio actual](./.github/workflows/release.yaml)
+- Habilitar Metrics server
 
-- Configuración de monitorización y alertas:
+  ```console
+  minikube addons enable metrics-server -p monitoring-tests
+  ```
 
-  - Configurar monitorización mediante prometheus en los nuevos endpoints añadidos, por lo menos con la siguiente configuración:
-    - Contador cada vez que se pasa por el/los nuevo/s endpoint/s, tal y como se ha realizado para los endpoints implementados inicialmente
+- Desplegando la aplicacion con Helm
 
-  - Desplegar prometheus a través de Kubernetes mediante minikube y configurar alert-manager para por lo menos las siguientes alarmas, tal y como se ha realizado en el laboratorio del día 3 mediante el chart `kube-prometheus-stack`:
-    - Uso de CPU de un contenedor mayor al del límite configurado, se puede utilizar como base el ejemplo utilizado en el laboratorio 3 para mandar alarmas cuando el contenedor de la aplicación `fast-api` consumía más del asignado mediante request
+```console
+helm -n fast-api upgrade my-app --wait --install --create-namespace fast-api-webapp
+```
 
-  - Las alarmas configuradas deberán tener severity high o critical
+- Acceder a la dirección `http://localhost:3000` en el navegador para acceder a Grafana, las credenciales por defecto son `admin` para el usuario y `prom-operator` para la contraseña.
 
-  - Crear canal en slack `<nombreAlumno>-prometheus-alarms` y configurar webhook entrante para envío de alertas con alert manager
+- Acceder a la dirección `http://localhost:9090` para acceder al Prometheus, **por defecto no se necesita autenticación**.
 
-  - Alert manager estará configurado para lo siguiente:
-    - Mandar un mensaje a Slack en el canal configurado en el paso anterior con las alertas con label "severity" y "critical"
-    - Deberán enviarse tanto alarmas como recuperación de las mismas
-    - Habrá una plantilla configurada para el envío de alarmas
+- Empezar a realizar diferentes peticiones al servidor de fastapi, es posible ver los endpoints disponibles y realizar peticiones a los mismos a través de la URL `http://localhost:8081/docs` utilizando swagger
 
-    Para poder comprobar si esta parte funciona se recomienda realizar una prueba de estres, como la realizada en el laboratorio 3 a partir del paso 8.
+- Acceder al dashboard creado para observar las peticiones al servidor a través de la URL `http://localhost:3000/dashboards`, seleccionando una vez en ella la opción Import y en el siguiente paso seleccionar **Upload JSON File** y seleccionar el archivo presente en esta carpeta llamado `practica_edu.json`.
 
-  - Creación de un dashboard de Grafana, con por lo menos lo siguiente:
-    - Número de llamadas a los endpoints
-    - Número de veces que la aplicación ha arrancado
+## Alertas de alto consumo de CPU
 
-## Entregables
+Se ha configurado en el chart de kube-prometheus-stack/values los valores para enviar alertas a un webhook en un canl de slack
 
-Se deberá entregar mediante un repositorio realizado a partir del original lo siguiente:
+```python
+receivers:
+    - name: 'null'
+    - name: 'slack'
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/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' # <--- AÑADIR EN ESTA LÍNEA EL WEBHOOK CREADO
+        send_resolved: true
+        channel: '#alarms-notifications-keepcoding-devops-7' # <--- AÑADIR EN ESTA LÍNEA EL CANAL
+        title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification'
+        text: |-
+          {{ range .Alerts }}
+            *Alert:* {{ .Labels.alertname }} - `{{ .Labels.severity }}`
+            *Description:* {{ .Annotations.message }}
+            *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:> *Runbook:* <{{ .Annotations.runbook_url }}|:spiral_note_pad:>
+            *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
 
-- Código de la aplicación y los tests modificados
-- Ficheros para CI/CD configurados y ejemplos de ejecución válidos
-- Ficheros para despliegue y configuración de prometheus de todo lo relacionado con este, así como el dashboard creado exportado a `JSON` para poder reproducirlo
-- `README.md` donde se explique como se ha abordado cada uno de los puntos requeridos en el apartado anterior, con ejemplos prácticos y guía para poder reproducir cada uno de ellos
+```
+
+- Obtener el pod creado en el paso 1 para poder lanzar posteriormente un comando de prueba de extres, así como seleccionarlo en el menú desplegable del panel de grafana:
+
+   ```sh
+   export POD_NAME=$(kubectl get pods --namespace fast-api -l "app.kubernetes.io/name=fast-api-webapp,app.kubernetes.io/instance=my-app" -o jsonpath="{.items[0].metadata.name}")
+   echo $POD_NAME
+   ```
+
+   Se debería obtener un resultado similar al siguiente:
+
+   ```sh
+   my-app-fast-api-webapp-585bf945cc-lvvpv
+   ```
+
+- Utilizar el resultado obtenido en el paso anterior para seleccionar en el dashboard creado de grafana para seleccionar el pod del que obtener información, seleccionando este a través del menú desplegable de nombre `pod`.
+
+- Acceder mediante una shell interactiva al contenedor `fast-api-webapp` del pod obtenido en el paso anterior:
+
+    ```sh
+    kubectl -n fast-api exec --stdin --tty $POD_NAME -c fast-api-webapp -- /bin/sh
+    ```
+
+- Dentro de la shell en la que se ha accedido en el paso anterior instalar y utilizar los siguientes comandos para descargar un proyecto de github que realizará pruebas de extress:
+
+    - Instalar los binarios necesarios en el pod
+
+        ```sh
+        apk update && apk add git go
+        ```
+
+    - Descargar el repositorio de github y acceder a la carpeta de este, donde se realizará la compilación del proyecot:
+
+        ```sh
+        git clone https://github.com/jaeg/NodeWrecker.git
+        cd NodeWrecker
+        go build -o extress main.go
+        ```
+
+    - Ejecución del binario obtenido de la compilación del paso anterior que realizará una prueba de extress dentro del pod:
+
+        ```sh
+        ./extress -abuse-memory -escalate -max-duration 10000000
+        ```
+
+- resultados en las imagenes, se pueden observar las alertas en el slack, y los accesos a los endpoints en grafana.

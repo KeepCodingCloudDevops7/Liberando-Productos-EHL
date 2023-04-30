@@ -309,3 +309,9 @@ receivers:
         ```
 
 - resultados en las imagenes, se pueden observar las alertas en el slack, y los accesos a los endpoints en grafana.
+
+
+## Pipelines de CI/CD
+
+He utilizado Github actions para definir los pipelines de la practica, pueden verse en la carpeta .github/workflows 
+

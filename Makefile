@@ -6,7 +6,7 @@ PIP		= $(VENV)/bin/pip
 IMAGE_REGISTRY_DOCKERHUB 	?= ealopezor
 IMAGE_REGISTRY_GHCR			?= ghcr.io
 IMAGE_REPO					= keepcodingclouddevops7
-IMAGE_NAME					?= liberando-productos-ehl
+IMAGE_NAME					?= liberando
 VERSION						?= develop
 
 # Variables used to configure docker images registries to build and push

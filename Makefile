@@ -5,7 +5,7 @@ PIP		= $(VENV)/bin/pip
 # Variables used to configure
 IMAGE_REGISTRY_DOCKERHUB 	?= ealopezor
 IMAGE_REGISTRY_GHCR			?= ghcr.io
-IMAGE_REPO					= keepcodingclouddevops7
+IMAGE_REPO					= ealopezor
 IMAGE_NAME					?= liberando
 VERSION						?= develop
 

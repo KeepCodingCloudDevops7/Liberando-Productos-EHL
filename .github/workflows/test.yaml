@@ -1,13 +1,13 @@
 
 
 on:
-  workflow_run:
-    # workflows:
-    #   - "Lint"
+  pull_request:
     branches:
       - '*'
-    types:
-      - completed
+  push:
+    branches:
+      - '*'
+
 
 env:
   PYTHON_VERSION: '3.8.12'

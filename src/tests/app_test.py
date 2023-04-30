@@ -18,7 +18,7 @@ class TestSimpleServer:
         """Tests the health check endpoint"""
         response = client.get("health")
 
-        assert response.status_code == 422
+        assert response.status_code == 200
         assert response.json() == {"health": "ok"}
 
     @pytest.mark.asyncio
@@ -26,7 +26,7 @@ class TestSimpleServer:
         """Tests the main endpoint"""
         response = client.get("/")
 
-        assert response.status_code == 422
+        assert response.status_code == 200
         assert response.json() == {"msg": "Hello World"}
 
     @pytest.mark.asyncio
@@ -34,5 +34,5 @@ class TestSimpleServer:
         """Tests the bye endpoint"""
         response = client.get("/bye")
 
-        assert response.status_code == 422
+        assert response.status_code == 200
         assert response.json() == {"msg": "Bye Bye Bye... *N'sync*"}
